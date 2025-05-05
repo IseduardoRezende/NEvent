@@ -43,9 +43,10 @@ namespace NEvent.Core
             return subscriber.TryRemove(eventHandler);
         }
 
-        public async Task PublishAsync<TEventArgs>(object _, TEventArgs data, CancellationToken cancellationToken = default)
+        public async Task PublishAsync<TEventArgs>(object sender, TEventArgs data, CancellationToken cancellationToken = default)
             where TEventArgs : EventArgs
         {
+            ArgumentNullException.ThrowIfNull(sender, nameof(sender));
             ArgumentNullException.ThrowIfNull(data, nameof(data));
 
             ISubscriber<TEventArgs> subscriber = _subscriberService.GetSubscriber<TEventArgs>();
@@ -54,7 +55,7 @@ namespace NEvent.Core
                 return;
 
             foreach (var eventHandler in eventHandlers!)
-                await eventHandler.HandleAsync(data, cancellationToken);
+                await eventHandler.HandleAsync(sender, data, cancellationToken);
         }
     }
 }

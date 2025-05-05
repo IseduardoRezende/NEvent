@@ -2,6 +2,6 @@
 {
     public interface IEventHandler<TEventArgs> where TEventArgs : EventArgs
     {
-        Task HandleAsync(TEventArgs args, CancellationToken cancellationToken = default);
+        Task HandleAsync(object sender, TEventArgs args, CancellationToken cancellationToken = default);
     }
 }
