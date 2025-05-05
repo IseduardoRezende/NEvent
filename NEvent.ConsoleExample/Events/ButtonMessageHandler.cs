@@ -4,7 +4,7 @@ namespace NEvent.ConsoleExample.Events
 {
     public class ButtonMessageHandler : IEventHandler<ButtonMessageArgs>
     {
-        public Task HandleAsync(ButtonMessageArgs args, CancellationToken _)
+        public Task HandleAsync(object sender, ButtonMessageArgs args, CancellationToken _)
         {            
             Console.WriteLine(args.Message);
 
