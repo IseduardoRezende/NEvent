@@ -1,6 +1,7 @@
 ﻿using NEvent.Core;
 using NEvent.Interfaces;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace NEvent.DependencyInjection
@@ -18,6 +19,19 @@ namespace NEvent.DependencyInjection
                 .AddScoped<ISubscriberProvider, SubscriberProvider>()
                 .AddScoped<IEventFilterProvider, EventFilterProvider>()
                 .AddNEventInterfaces(eventAssemblies);
+        }
+
+        public static IServiceCollection AddNEventLogging(
+             this IServiceCollection services,
+             Action<ILoggingBuilder>? configure = null)
+        {
+            ArgumentNullException.ThrowIfNull(services, nameof(services));
+
+            return services.AddLogging(builder =>
+            {
+                builder.SetMinimumLevel(LogLevel.Information);
+                configure?.Invoke(builder);
+            });
         }
 
         private static IServiceCollection AddNEventInterfaces(this IServiceCollection services, params Assembly[] eventAssemblies)
