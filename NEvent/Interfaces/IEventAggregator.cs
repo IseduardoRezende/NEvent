@@ -8,7 +8,7 @@
         bool UnSubscribe<TEventArgs>(IEventHandler<TEventArgs> eventHandler)
             where TEventArgs : EventArgs;
 
-        Task PublishAsync<TEventArgs>(object sender, TEventArgs data, CancellationToken cancellationToken = default)
+        Task PublishAsync<TEventArgs>(object sender, TEventArgs args, CancellationToken cancellationToken = default)
             where TEventArgs : EventArgs;
     }
 }
