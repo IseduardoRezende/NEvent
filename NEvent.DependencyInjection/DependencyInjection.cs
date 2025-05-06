@@ -16,10 +16,11 @@ namespace NEvent.DependencyInjection
                 .AddSingleton(typeof(ISubscriber<>), typeof(Subscriber<>))
                 .AddScoped<IEventAggregator, EventAggregator>()
                 .AddScoped<ISubscriberProvider, SubscriberProvider>()
-                .AddEventHandlers(eventAssemblies);
+                .AddScoped<IEventFilterProvider, EventFilterProvider>()
+                .AddNEventInterfaces(eventAssemblies);
         }
 
-        private static IServiceCollection AddEventHandlers(this IServiceCollection services, params Assembly[] eventAssemblies)
+        private static IServiceCollection AddNEventInterfaces(this IServiceCollection services, params Assembly[] eventAssemblies)
         {
             ArgumentNullException.ThrowIfNull(services, nameof(services));
             ArgumentNullException.ThrowIfNull(eventAssemblies, nameof(eventAssemblies));
@@ -36,7 +37,8 @@ namespace NEvent.DependencyInjection
                     List<Type> interfaces =
                     [..
                         type.GetInterfaces().Where(i => i.IsGenericType &&
-                                                        i.GetGenericTypeDefinition() == typeof(IEventHandler<>))
+                                                       (i.GetGenericTypeDefinition() == typeof(IEventHandler<>) ||
+                                                        i.GetGenericTypeDefinition() == typeof(IEventFilter<>)))
                     ];
 
                     foreach (var @interface in interfaces)
