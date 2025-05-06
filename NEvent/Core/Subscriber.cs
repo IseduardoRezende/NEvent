@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 
 namespace NEvent.Core
 {
-    public class Subscriber<TEventArgs> : ISubscriber<TEventArgs>
+    public sealed class Subscriber<TEventArgs> : ISubscriber<TEventArgs>
         where TEventArgs : EventArgs
     {
         private readonly ConcurrentDictionary<Type, List<IEventHandler<TEventArgs>>>
@@ -18,19 +18,23 @@ namespace NEvent.Core
             _logger = logger;
         }
 
-        public bool TryUpdate(List<IEventHandler<TEventArgs>> eventHandlers)
+        public bool TryAddOrUpdate(IEventHandler<TEventArgs> eventHandler)
         {
-            ArgumentNullException.ThrowIfNull(eventHandlers, nameof(eventHandlers));
+            lock (_lock)
+            {
+                ArgumentNullException.ThrowIfNull(eventHandler, nameof(eventHandler));
 
-            Type key = typeof(TEventArgs);
-            return _subscribers.TryUpdate(key, eventHandlers, _subscribers[key]);
-        }
+                Type key = typeof(TEventArgs);
 
-        public bool TryAdd(List<IEventHandler<TEventArgs>> eventHandlers)
-        {
-            ArgumentNullException.ThrowIfNull(eventHandlers, nameof(eventHandlers));
+                TryGetValues(key, out List<IEventHandler<TEventArgs>>? eventHandlers);
 
-            return _subscribers.TryAdd(typeof(TEventArgs), eventHandlers);
+                if (eventHandlers is null)
+                    return _subscribers.TryAdd(key, [eventHandler]);
+
+                List<IEventHandler<TEventArgs>> updatedEventHandlers = [.. eventHandlers, eventHandler];
+
+                return _subscribers.TryUpdate(key, updatedEventHandlers, eventHandlers);
+            }
         }
 
         public bool TryRemove(IEventHandler<TEventArgs> eventHandler)
@@ -39,7 +43,7 @@ namespace NEvent.Core
             {
                 ArgumentNullException.ThrowIfNull(eventHandler, nameof(eventHandler));
 
-                if (!TryGetValue(typeof(TEventArgs), out List<IEventHandler<TEventArgs>>? eventHandlers))
+                if (!TryGetValues(typeof(TEventArgs), out List<IEventHandler<TEventArgs>>? eventHandlers))
                     return false;
 
                 foreach ((int i, IEventHandler<TEventArgs> handler) in eventHandlers!.Index())
@@ -55,7 +59,7 @@ namespace NEvent.Core
             }
         }
 
-        public bool TryGetValue(Type type, out List<IEventHandler<TEventArgs>>? eventHandlers)
+        public bool TryGetValues(Type type, out List<IEventHandler<TEventArgs>>? eventHandlers)
         {
             ArgumentNullException.ThrowIfNull(type, nameof(type));
 

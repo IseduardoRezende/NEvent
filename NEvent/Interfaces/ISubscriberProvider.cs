@@ -2,6 +2,6 @@
 {
     public interface ISubscriberProvider
     {
-        public ISubscriber<TEventArgs> GetSubscriber<TEventArgs>() where TEventArgs : EventArgs;
+        ISubscriber<TEventArgs> Get<TEventArgs>() where TEventArgs : EventArgs;
     }
 }
