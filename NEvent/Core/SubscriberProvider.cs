@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace NEvent.Core
 {
-    public class SubscriberProvider : ISubscriberProvider
+    public sealed class SubscriberProvider : ISubscriberProvider
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<SubscriberProvider>? _logger;
@@ -16,7 +16,7 @@ namespace NEvent.Core
             _logger = logger;
         }
 
-        public ISubscriber<TEventArgs> GetSubscriber<TEventArgs>()
+        public ISubscriber<TEventArgs> Get<TEventArgs>()
             where TEventArgs : EventArgs
         {
             object? result = _serviceProvider.GetService(typeof(ISubscriber<TEventArgs>));
