@@ -9,12 +9,7 @@ namespace NEvent.ConsoleExample.Events
         {
             return Task.FromResult(string.IsNullOrWhiteSpace(args?.Message) || args.Message.Contains("Hi")
                  ? EventFilterResult.Skip
-                 : EventFilterResult.Proceed); // or default
-        }
-        
-        public Task OnAfterPublishAsync(object sender, ButtonMessageArgs args, CancellationToken cancellationToken = default)
-        {
-            return Task.CompletedTask;
-        }
+                 : EventFilterResult.Proceed); //or default
+        }       
     }
 }
