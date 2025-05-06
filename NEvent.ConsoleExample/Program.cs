@@ -21,6 +21,8 @@ eventAggregator.Subscribe(buttonMessageHandler);
 
 btn.SendMessage("Te amo Deus. | I Love you God.");
 
+btn.SendMessage("Hi (This message will be catched by filter.)");
+
 eventAggregator.UnSubscribe(buttonMessageHandler);
 btn.SendMessage("Se eu ver, deu ruim! | If I see, It's wrong!");
 

@@ -6,7 +6,7 @@ namespace NEvent.ConsoleExample.Events
     {        
         private int clickTimes = 0;
 
-        public Task HandleAsync(object sender, ButtonClickArgs _, CancellationToken __)
+        public Task HandleAsync(object _, ButtonClickArgs __, CancellationToken ___)
         {
             clickTimes++;
 
