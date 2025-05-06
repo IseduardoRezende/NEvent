@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NEvent.DependencyInjection\NEvent.DependencyInjection.csproj" />
-    <ProjectReference Include="..\NEvent.Log\NEvent.Log.csproj" />
   </ItemGroup>
 
 </Project>

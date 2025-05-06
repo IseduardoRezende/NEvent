@@ -9,8 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NEvent.ConsoleExample", "NE
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NEvent.DependencyInjection", "NEvent.DependencyInjection\NEvent.DependencyInjection.csproj", "{DC1B8BB7-53EA-4F53-91AC-A370CBAEA1D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NEvent.Log", "NEvent.Log\NEvent.Log.csproj", "{FC59A62F-463A-481D-A4D8-386277B4B576}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,10 +27,6 @@ Global
 		{DC1B8BB7-53EA-4F53-91AC-A370CBAEA1D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC1B8BB7-53EA-4F53-91AC-A370CBAEA1D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC1B8BB7-53EA-4F53-91AC-A370CBAEA1D7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FC59A62F-463A-481D-A4D8-386277B4B576}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FC59A62F-463A-481D-A4D8-386277B4B576}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FC59A62F-463A-481D-A4D8-386277B4B576}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FC59A62F-463A-481D-A4D8-386277B4B576}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
