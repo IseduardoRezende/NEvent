@@ -55,6 +55,16 @@ namespace NEvent.Core
                 return;
             }
 
+            await ExecuteFiltersAndHandlersAsync(sender, args, eventFilters, eventHandlers!, cancellationToken);
+        }
+
+        private static async Task ExecuteFiltersAndHandlersAsync<TEventArgs>(
+            object sender, 
+            TEventArgs args, 
+            IEnumerable<IEventFilter<TEventArgs>> eventFilters, 
+            List<IEventHandler<TEventArgs>> eventHandlers, 
+            CancellationToken cancellationToken) where TEventArgs : EventArgs
+        {
             foreach (IEventFilter<TEventArgs> eventFilter in eventFilters)
             {
                 EventFilterResult filterResult = await eventFilter.OnBeforePublishAsync(sender, args, cancellationToken);
@@ -72,12 +82,12 @@ namespace NEvent.Core
 
                 await eventFilter.OnAfterPublishAsync(sender, args, cancellationToken);
             }
-        }       
+        }
 
-        private async Task ExecuteHandlersAsync<TEventArgs>(
-            object sender, 
-            TEventArgs args, 
-            List<IEventHandler<TEventArgs>> eventHandlers, 
+        private static async Task ExecuteHandlersAsync<TEventArgs>(
+            object sender,
+            TEventArgs args,
+            List<IEventHandler<TEventArgs>> eventHandlers,
             CancellationToken cancellationToken) where TEventArgs : EventArgs
         {
             ArgumentNullException.ThrowIfNull(sender, nameof(sender));
@@ -90,7 +100,7 @@ namespace NEvent.Core
             }
         }
 
-        private bool CanPublish<TEventArgs>(ISubscriber<TEventArgs> subscriber, out List<IEventHandler<TEventArgs>>? eventHandlers) 
+        private static bool CanPublish<TEventArgs>(ISubscriber<TEventArgs> subscriber, out List<IEventHandler<TEventArgs>>? eventHandlers)
             where TEventArgs : EventArgs
         {
             return subscriber.TryGetValues(typeof(TEventArgs), out eventHandlers) && eventHandlers is { Count: > 0 };
