@@ -1,5 +1,4 @@
-﻿using NEvent.Log;
-using NEvent.Interfaces;
+﻿using NEvent.Interfaces;
 using NEvent.DependencyInjection;
 using NEvent.ConsoleExample.Events;
 using Microsoft.Extensions.DependencyInjection;
