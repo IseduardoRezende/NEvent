@@ -1,4 +1,4 @@
-# 🔥 NEvent 
+# 🪼 NEvent 
 **Clear and precise in-memory events for .NET.** 
 
 ### Philosophy: 
