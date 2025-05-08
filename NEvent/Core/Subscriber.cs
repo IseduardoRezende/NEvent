@@ -31,6 +31,9 @@ namespace NEvent.Core
                 if (eventHandlers is null)
                     return _subscribers.TryAdd(key, [eventHandler]);
 
+                if (TryGetIndex(eventHandlers!, eventHandler, out _))
+                    return false;
+
                 List<IEventHandler<TEventArgs>> updatedEventHandlers = [.. eventHandlers, eventHandler];
 
                 return _subscribers.TryUpdate(key, updatedEventHandlers, eventHandlers);
@@ -46,16 +49,11 @@ namespace NEvent.Core
                 if (!TryGetValues(typeof(TEventArgs), out List<IEventHandler<TEventArgs>>? eventHandlers))
                     return false;
 
-                foreach ((int i, IEventHandler<TEventArgs> handler) in eventHandlers!.Index())
-                {
-                    if (handler.GetType() == eventHandler.GetType())
-                    {
-                        eventHandlers!.RemoveAt(i);
-                        return true;
-                    }
-                }
+                if (!TryGetIndex(eventHandlers!, eventHandler, out int? index))
+                    return false;
 
-                return false;
+                eventHandlers!.RemoveAt(index!.Value);
+                return true;
             }
         }
 
@@ -64,6 +62,27 @@ namespace NEvent.Core
             ArgumentNullException.ThrowIfNull(type, nameof(type));
 
             return _subscribers.TryGetValue(type, out eventHandlers);
+        }
+
+        private bool TryGetIndex(List<IEventHandler<TEventArgs>> eventHandlers, IEventHandler<TEventArgs> eventHandler, out int? index)
+        {
+            lock (_lock)
+            {
+                ArgumentNullException.ThrowIfNull(eventHandlers, nameof(eventHandlers));
+                ArgumentNullException.ThrowIfNull(eventHandler, nameof(eventHandler));
+
+                foreach ((int i, IEventHandler<TEventArgs> handler) in eventHandlers.Index())
+                {
+                    if (handler.GetType() == eventHandler.GetType())
+                    {
+                        index = i;
+                        return true;
+                    }
+                }
+
+                index = null;
+                return false;
+            }
         }
     }
 }
