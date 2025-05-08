@@ -18,7 +18,8 @@ namespace NEvent.DependencyInjection
                 .AddScoped<IEventAggregator, EventAggregator>()
                 .AddScoped<ISubscriberProvider, SubscriberProvider>()
                 .AddScoped<IEventFilterProvider, EventFilterProvider>()
-                .AddNEventInterfaces(eventAssemblies);
+                .AddNEventHandlers(eventAssemblies)
+                .AddNEventFilters(eventAssemblies);
         }
 
         public static IServiceCollection AddNEventLogging(
@@ -34,7 +35,31 @@ namespace NEvent.DependencyInjection
             });
         }
 
-        private static IServiceCollection AddNEventInterfaces(this IServiceCollection services, params Assembly[] eventAssemblies)
+        private static IServiceCollection AddNEventHandlers(this IServiceCollection services, params Assembly[] eventAssemblies)
+        {
+            ArgumentNullException.ThrowIfNull(services, nameof(services));
+            ArgumentNullException.ThrowIfNull(eventAssemblies, nameof(eventAssemblies));
+
+            foreach (var eventAssembly in eventAssemblies)
+            {
+                List<Type> types =
+                [..
+                    eventAssembly.GetTypes().Where(t => t is { IsClass: true, IsAbstract: false })
+                ];
+
+                foreach (Type type in types)
+                {
+                    bool isValidType = type.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEventHandler<>));
+
+                    if (isValidType)
+                        services.AddScoped(type);
+                }
+            }
+
+            return services;
+        }
+
+        private static IServiceCollection AddNEventFilters(this IServiceCollection services, params Assembly[] eventAssemblies)
         {
             ArgumentNullException.ThrowIfNull(services, nameof(services));
             ArgumentNullException.ThrowIfNull(eventAssemblies, nameof(eventAssemblies));
@@ -51,8 +76,7 @@ namespace NEvent.DependencyInjection
                     List<Type> interfaces =
                     [..
                         type.GetInterfaces().Where(i => i.IsGenericType &&
-                                                       (i.GetGenericTypeDefinition() == typeof(IEventHandler<>) ||
-                                                        i.GetGenericTypeDefinition() == typeof(IEventFilter<>)))
+                                                        i.GetGenericTypeDefinition() == typeof(IEventFilter<>))
                     ];
 
                     foreach (var @interface in interfaces)
