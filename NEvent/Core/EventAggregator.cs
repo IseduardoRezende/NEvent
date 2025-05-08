@@ -59,12 +59,17 @@ namespace NEvent.Core
         }
 
         private static async Task ExecuteFiltersAndHandlersAsync<TEventArgs>(
-            object sender, 
-            TEventArgs args, 
-            IEnumerable<IEventFilter<TEventArgs>> eventFilters, 
-            List<IEventHandler<TEventArgs>> eventHandlers, 
+            object sender,
+            TEventArgs args,
+            IEnumerable<IEventFilter<TEventArgs>> eventFilters,
+            List<IEventHandler<TEventArgs>> eventHandlers,
             CancellationToken cancellationToken) where TEventArgs : EventArgs
         {
+            ArgumentNullException.ThrowIfNull(args, nameof(args));
+            ArgumentNullException.ThrowIfNull(sender, nameof(sender));
+            ArgumentNullException.ThrowIfNull(eventFilters, nameof(eventFilters));
+            ArgumentNullException.ThrowIfNull(eventHandlers, nameof(eventHandlers));
+
             foreach (IEventFilter<TEventArgs> eventFilter in eventFilters)
             {
                 EventFilterResult filterResult = await eventFilter.OnBeforePublishAsync(sender, args, cancellationToken);
@@ -90,8 +95,8 @@ namespace NEvent.Core
             List<IEventHandler<TEventArgs>> eventHandlers,
             CancellationToken cancellationToken) where TEventArgs : EventArgs
         {
-            ArgumentNullException.ThrowIfNull(sender, nameof(sender));
             ArgumentNullException.ThrowIfNull(args, nameof(args));
+            ArgumentNullException.ThrowIfNull(sender, nameof(sender));
             ArgumentNullException.ThrowIfNull(eventHandlers, nameof(eventHandlers));
 
             foreach (IEventHandler<TEventArgs> eventHandler in eventHandlers)
@@ -103,6 +108,8 @@ namespace NEvent.Core
         private static bool CanPublish<TEventArgs>(ISubscriber<TEventArgs> subscriber, out List<IEventHandler<TEventArgs>>? eventHandlers)
             where TEventArgs : EventArgs
         {
+            ArgumentNullException.ThrowIfNull(subscriber, nameof(subscriber));
+
             return subscriber.TryGetValues(typeof(TEventArgs), out eventHandlers) && eventHandlers is { Count: > 0 };
         }
     }
