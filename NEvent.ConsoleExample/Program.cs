@@ -5,24 +5,23 @@ using Microsoft.Extensions.DependencyInjection;
 
 Console.WriteLine("Hello, World!");
 
-IServiceCollection serviceCollection = new ServiceCollection();
+IServiceCollection services = new ServiceCollection();
 
-serviceCollection.AddNEventLogging();
-serviceCollection.AddNEvent(eventAssemblies: typeof(ButtonMessageHandler).Assembly);
+services.AddNEventLogging();
+services.AddNEvent(eventAssemblies: [typeof(ButtonMessageHandler).Assembly]);
 
-ServiceProvider provider = serviceCollection.BuildServiceProvider();
+IServiceProvider serviceProvider = services.BuildServiceProvider();
 
-IEventAggregator eventAggregator = provider.GetService<IEventAggregator>()!;    
+IEventAggregator eventAggregator = serviceProvider.GetService<IEventAggregator>()!;
+eventAggregator.TrySubscribe<ButtonMessageArgs>();
+
 Button btn = new(eventAggregator);
 
-ButtonMessageHandler buttonMessageHandler = (ButtonMessageHandler)provider.GetService<IEventHandler<ButtonMessageArgs>>()!;
-eventAggregator.Subscribe(buttonMessageHandler);
+await btn.SendMessageAsync("I Love you God.");
 
-btn.SendMessage("Te amo Deus. | I Love you God.");
+await btn.SendMessageAsync("Hi (This message will be catched by filter.)");
 
-btn.SendMessage("Hi (This message will be catched by filter.)");
+ButtonMessageHandler buttonMessageHandler = serviceProvider.GetService<ButtonMessageHandler>()!;
+eventAggregator.TryUnSubscribe(buttonMessageHandler);
 
-eventAggregator.UnSubscribe(buttonMessageHandler);
-btn.SendMessage("Se eu ver, deu ruim! | If I see, It's wrong!");
-
-Console.WriteLine("Finished!!!");
+await btn.SendMessageAsync("If I see, It's wrong!");

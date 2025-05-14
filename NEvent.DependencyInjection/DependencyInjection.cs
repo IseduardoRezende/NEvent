@@ -8,7 +8,7 @@ namespace NEvent.DependencyInjection
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddNEvent(this IServiceCollection services, params Assembly[] eventAssemblies)
+        public static IServiceCollection AddNEvent(this IServiceCollection services, Assembly[] eventAssemblies)
         {
             ArgumentNullException.ThrowIfNull(services, nameof(services));
             ArgumentNullException.ThrowIfNull(eventAssemblies, nameof(eventAssemblies));
@@ -34,12 +34,12 @@ namespace NEvent.DependencyInjection
             });
         }
 
-        private static IServiceCollection AddNEventInterfaces(this IServiceCollection services, params Assembly[] eventAssemblies)
+        private static IServiceCollection AddNEventInterfaces(this IServiceCollection services, Assembly[] eventAssemblies)
         {
             ArgumentNullException.ThrowIfNull(services, nameof(services));
             ArgumentNullException.ThrowIfNull(eventAssemblies, nameof(eventAssemblies));
 
-            foreach (var eventAssembly in eventAssemblies)
+            foreach (Assembly eventAssembly in eventAssemblies)
             {
                 List<Type> types =
                 [..
@@ -55,9 +55,12 @@ namespace NEvent.DependencyInjection
                                                         i.GetGenericTypeDefinition() == typeof(IEventFilter<>)))
                     ];
 
-                    foreach (var @interface in interfaces)
+                    foreach (Type @interface in interfaces)
                     {
                         services.AddScoped(@interface, type);
+
+                        if (@interface.GetGenericTypeDefinition() == typeof(IEventHandler<>))
+                            services.AddScoped(type);
                     }
                 }
             }

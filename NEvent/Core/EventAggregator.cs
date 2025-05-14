@@ -1,25 +1,42 @@
 ﻿using NEvent.Interfaces;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace NEvent.Core
 {
     public sealed class EventAggregator : IEventAggregator
     {
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<EventAggregator>? _logger;
         private readonly ISubscriberProvider _subscriberProvider;
         private readonly IEventFilterProvider _eventFilterProvider;
-        private readonly ILogger<EventAggregator>? _logger;
 
         public EventAggregator(
+            IServiceProvider serviceProvider,
             ISubscriberProvider subscriberProvider,
             IEventFilterProvider eventFilterProvider,
             ILogger<EventAggregator>? logger = null)
         {
+            _logger = logger;
+            _serviceProvider = serviceProvider;
             _subscriberProvider = subscriberProvider;
             _eventFilterProvider = eventFilterProvider;
-            _logger = logger;
         }
 
-        public bool Subscribe<TEventArgs>(IEventHandler<TEventArgs> eventHandler)
+        public bool TrySubscribe<TEventArgs>() where TEventArgs : EventArgs
+        {
+            IEnumerable<IEventHandler<TEventArgs>> eventHandlers = _serviceProvider.GetServices<IEventHandler<TEventArgs>>();
+
+            foreach (IEventHandler<TEventArgs> eventHandler in eventHandlers) 
+            {
+                if (!TrySubscribe(eventHandler))
+                    return false;
+            }            
+
+            return true;
+        }
+
+        public bool TrySubscribe<TEventArgs>(IEventHandler<TEventArgs> eventHandler)
             where TEventArgs : EventArgs
         {
             ArgumentNullException.ThrowIfNull(eventHandler, nameof(eventHandler));
@@ -28,7 +45,20 @@ namespace NEvent.Core
             return subscriber.TryAddOrUpdate(eventHandler);
         }
 
-        public bool UnSubscribe<TEventArgs>(IEventHandler<TEventArgs> eventHandler)
+        public bool TryUnSubscribe<TEventArgs>() where TEventArgs : EventArgs
+        {
+            IEnumerable<IEventHandler<TEventArgs>> eventHandlers = _serviceProvider.GetServices<IEventHandler<TEventArgs>>();
+
+            foreach (IEventHandler<TEventArgs> eventHandler in eventHandlers)
+            {
+                if (!TryUnSubscribe(eventHandler))
+                    return false;
+            }
+
+            return true;
+        }
+
+        public bool TryUnSubscribe<TEventArgs>(IEventHandler<TEventArgs> eventHandler)
             where TEventArgs : EventArgs
         {
             ArgumentNullException.ThrowIfNull(eventHandler, nameof(eventHandler));
@@ -59,12 +89,17 @@ namespace NEvent.Core
         }
 
         private static async Task ExecuteFiltersAndHandlersAsync<TEventArgs>(
-            object sender, 
-            TEventArgs args, 
-            IEnumerable<IEventFilter<TEventArgs>> eventFilters, 
-            List<IEventHandler<TEventArgs>> eventHandlers, 
+            object sender,
+            TEventArgs args,
+            IEnumerable<IEventFilter<TEventArgs>> eventFilters,
+            List<IEventHandler<TEventArgs>> eventHandlers,
             CancellationToken cancellationToken) where TEventArgs : EventArgs
         {
+            ArgumentNullException.ThrowIfNull(args, nameof(args));
+            ArgumentNullException.ThrowIfNull(sender, nameof(sender));
+            ArgumentNullException.ThrowIfNull(eventFilters, nameof(eventFilters));
+            ArgumentNullException.ThrowIfNull(eventHandlers, nameof(eventHandlers));
+
             foreach (IEventFilter<TEventArgs> eventFilter in eventFilters)
             {
                 EventFilterResult filterResult = await eventFilter.OnBeforePublishAsync(sender, args, cancellationToken);
@@ -90,8 +125,8 @@ namespace NEvent.Core
             List<IEventHandler<TEventArgs>> eventHandlers,
             CancellationToken cancellationToken) where TEventArgs : EventArgs
         {
-            ArgumentNullException.ThrowIfNull(sender, nameof(sender));
             ArgumentNullException.ThrowIfNull(args, nameof(args));
+            ArgumentNullException.ThrowIfNull(sender, nameof(sender));
             ArgumentNullException.ThrowIfNull(eventHandlers, nameof(eventHandlers));
 
             foreach (IEventHandler<TEventArgs> eventHandler in eventHandlers)
@@ -103,6 +138,8 @@ namespace NEvent.Core
         private static bool CanPublish<TEventArgs>(ISubscriber<TEventArgs> subscriber, out List<IEventHandler<TEventArgs>>? eventHandlers)
             where TEventArgs : EventArgs
         {
+            ArgumentNullException.ThrowIfNull(subscriber, nameof(subscriber));
+
             return subscriber.TryGetValues(typeof(TEventArgs), out eventHandlers) && eventHandlers is { Count: > 0 };
         }
     }

@@ -9,13 +9,13 @@ namespace NEvent.ConsoleExample.Events
         public void ClickNumberIncrement()
         {
             _ = _eventAggregator.PublishAsync(sender: this, new ButtonClickArgs());
-        }  
+        }
 
-        public void SendMessage(string message)
+        public async Task SendMessageAsync(string message)
         {
             ArgumentNullException.ThrowIfNull(message);
-            
-            _ = _eventAggregator.PublishAsync(sender: this, new ButtonMessageArgs(message));
+
+            await _eventAggregator.PublishAsync(sender: this, new ButtonMessageArgs(message));
         }
     }
 }
