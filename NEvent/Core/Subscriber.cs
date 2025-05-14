@@ -28,11 +28,14 @@ namespace NEvent.Core
 
                 TryGetValues(key, out List<IEventHandler<TEventArgs>>? eventHandlers);
 
-                if (eventHandlers is null)
+                if (eventHandlers is null or { Count: 0 })
                     return _subscribers.TryAdd(key, [eventHandler]);
 
-                if (TryGetIndex(eventHandlers!, eventHandler, out _))
-                    return false;
+                if (TryGetIndex(eventHandlers, eventHandler, out int? index))
+                {
+                    eventHandlers[index!.Value] = eventHandler;
+                    return true;
+                }                    
 
                 List<IEventHandler<TEventArgs>> updatedEventHandlers = [.. eventHandlers, eventHandler];
 
