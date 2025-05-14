@@ -8,7 +8,7 @@ namespace NEvent.DependencyInjection
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddNEvent(this IServiceCollection services, params Assembly[] eventAssemblies)
+        public static IServiceCollection AddNEvent(this IServiceCollection services, Assembly[] eventAssemblies)
         {
             ArgumentNullException.ThrowIfNull(services, nameof(services));
             ArgumentNullException.ThrowIfNull(eventAssemblies, nameof(eventAssemblies));
@@ -18,8 +18,7 @@ namespace NEvent.DependencyInjection
                 .AddScoped<IEventAggregator, EventAggregator>()
                 .AddScoped<ISubscriberProvider, SubscriberProvider>()
                 .AddScoped<IEventFilterProvider, EventFilterProvider>()
-                .AddNEventHandlers(eventAssemblies)
-                .AddNEventFilters(eventAssemblies);
+                .AddNEventInterfaces(eventAssemblies);
         }
 
         public static IServiceCollection AddNEventLogging(
@@ -35,36 +34,12 @@ namespace NEvent.DependencyInjection
             });
         }
 
-        private static IServiceCollection AddNEventHandlers(this IServiceCollection services, params Assembly[] eventAssemblies)
+        private static IServiceCollection AddNEventInterfaces(this IServiceCollection services, Assembly[] eventAssemblies)
         {
             ArgumentNullException.ThrowIfNull(services, nameof(services));
             ArgumentNullException.ThrowIfNull(eventAssemblies, nameof(eventAssemblies));
 
-            foreach (var eventAssembly in eventAssemblies)
-            {
-                List<Type> types =
-                [..
-                    eventAssembly.GetTypes().Where(t => t is { IsClass: true, IsAbstract: false })
-                ];
-
-                foreach (Type type in types)
-                {
-                    bool isValidType = type.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEventHandler<>));
-
-                    if (isValidType)
-                        services.AddScoped(type);
-                }
-            }
-
-            return services;
-        }
-
-        private static IServiceCollection AddNEventFilters(this IServiceCollection services, params Assembly[] eventAssemblies)
-        {
-            ArgumentNullException.ThrowIfNull(services, nameof(services));
-            ArgumentNullException.ThrowIfNull(eventAssemblies, nameof(eventAssemblies));
-
-            foreach (var eventAssembly in eventAssemblies)
+            foreach (Assembly eventAssembly in eventAssemblies)
             {
                 List<Type> types =
                 [..
@@ -76,12 +51,16 @@ namespace NEvent.DependencyInjection
                     List<Type> interfaces =
                     [..
                         type.GetInterfaces().Where(i => i.IsGenericType &&
-                                                        i.GetGenericTypeDefinition() == typeof(IEventFilter<>))
+                                                       (i.GetGenericTypeDefinition() == typeof(IEventHandler<>) ||
+                                                        i.GetGenericTypeDefinition() == typeof(IEventFilter<>)))
                     ];
 
-                    foreach (var @interface in interfaces)
+                    foreach (Type @interface in interfaces)
                     {
                         services.AddScoped(@interface, type);
+
+                        if (@interface.GetGenericTypeDefinition() == typeof(IEventHandler<>))
+                            services.AddScoped(type);
                     }
                 }
             }
