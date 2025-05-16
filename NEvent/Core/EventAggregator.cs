@@ -1,5 +1,4 @@
 ﻿using NEvent.Interfaces;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace NEvent.Core
@@ -7,17 +6,14 @@ namespace NEvent.Core
     public sealed class EventAggregator : IEventAggregator
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly ILogger<EventAggregator>? _logger;
         private readonly ISubscriberProvider _subscriberProvider;
         private readonly IEventFilterProvider _eventFilterProvider;
 
         public EventAggregator(
             IServiceProvider serviceProvider,
             ISubscriberProvider subscriberProvider,
-            IEventFilterProvider eventFilterProvider,
-            ILogger<EventAggregator>? logger = null)
+            IEventFilterProvider eventFilterProvider)
         {
-            _logger = logger;
             _serviceProvider = serviceProvider;
             _subscriberProvider = subscriberProvider;
             _eventFilterProvider = eventFilterProvider;
