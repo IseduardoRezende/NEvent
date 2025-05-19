@@ -1,4 +1,5 @@
-﻿using NEvent.Interfaces;
+﻿using System.Reflection;
+using NEvent.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace NEvent.Core
@@ -77,11 +78,14 @@ namespace NEvent.Core
 
             if (!eventFilters.Any())
             {
-                await ExecuteHandlersAsync(sender, args, eventHandlers!, cancellationToken);
+                eventHandlers = ApplyEventOrder(eventHandlers);               
+                await ExecuteHandlersAsync(sender, args, eventHandlers, cancellationToken);            
                 return;
             }
-
-            await ExecuteFiltersAndHandlersAsync(sender, args, eventFilters, eventHandlers!, cancellationToken);
+            
+            eventFilters = ApplyEventOrder(eventFilters);
+            eventHandlers = ApplyEventOrder(eventHandlers);            
+            await ExecuteFiltersAndHandlersAsync(sender, args, eventFilters, eventHandlers, cancellationToken);
         }
 
         private static async Task ExecuteFiltersAndHandlersAsync<TEventArgs>(
@@ -108,7 +112,7 @@ namespace NEvent.Core
 
                 if (filterResult is not EventFilterResult.SkipHandlers)
                 {
-                    await ExecuteHandlersAsync(sender, args, eventHandlers!, cancellationToken);
+                    await ExecuteHandlersAsync(sender, args, eventHandlers, cancellationToken);
                 }
 
                 await eventFilter.OnAfterPublishAsync(sender, args, cancellationToken);
@@ -131,12 +135,28 @@ namespace NEvent.Core
             }
         }
 
-        private static bool CanPublish<TEventArgs>(ISubscriber<TEventArgs> subscriber, out List<IEventHandler<TEventArgs>>? eventHandlers)
+        private static bool CanPublish<TEventArgs>(ISubscriber<TEventArgs> subscriber, out List<IEventHandler<TEventArgs>> eventHandlers)
             where TEventArgs : EventArgs
         {
             ArgumentNullException.ThrowIfNull(subscriber, nameof(subscriber));
 
-            return subscriber.TryGetValues(typeof(TEventArgs), out eventHandlers) && eventHandlers is { Count: > 0 };
+            return subscriber.TryGetValues(typeof(TEventArgs), out eventHandlers!) && eventHandlers is { Count: > 0 };
         }
+
+        private static List<T> ApplyEventOrder<T>(IEnumerable<T> eventItems)     
+            where T : notnull
+        {
+            ArgumentNullException.ThrowIfNull(eventItems, nameof(eventItems));
+
+            return [.. eventItems.Select(e =>
+            {
+                Type type = e.GetType();
+                EventOrderAttribute? attr = type.GetCustomAttribute<EventOrderAttribute>();
+                int order = attr?.Value ?? int.MaxValue;
+                return new { EventItem = e, Order = order };
+            })
+           .OrderBy(f => f.Order)
+           .Select(f => f.EventItem)];
+        }        
     }
 }

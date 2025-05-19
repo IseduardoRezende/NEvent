@@ -3,8 +3,8 @@ using NEvent.Interfaces;
 
 namespace NEvent.ConsoleExample.Events
 {
-    [EventOrder(2)]
-    public class ButtonMessageFilter : IEventFilter<ButtonMessageArgs>
+    [EventOrder(1)]
+    public class ButtonMessageFilterTwo : IEventFilter<ButtonMessageArgs>
     {
         public Task OnAfterPublishAsync(object sender, ButtonMessageArgs args, CancellationToken cancellationToken = default)
         {
@@ -13,9 +13,7 @@ namespace NEvent.ConsoleExample.Events
 
         public Task<EventFilterResult> OnBeforePublishAsync(object sender, ButtonMessageArgs args, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(string.IsNullOrWhiteSpace(args?.Message) || args.Message.Contains("Hi")
-                 ? EventFilterResult.Skip
-                 : EventFilterResult.Proceed); //or default
-        }       
+            return Task.FromResult(EventFilterResult.SkipHandlers);
+        }
     }
 }

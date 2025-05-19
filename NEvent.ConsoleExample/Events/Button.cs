@@ -13,8 +13,6 @@ namespace NEvent.ConsoleExample.Events
 
         public async Task SendMessageAsync(string message)
         {
-            ArgumentNullException.ThrowIfNull(message);
-
             await _eventAggregator.PublishAsync(sender: this, new ButtonMessageArgs(message));
         }
     }
