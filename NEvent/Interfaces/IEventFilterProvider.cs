@@ -2,6 +2,6 @@
 {
     public interface IEventFilterProvider
     {
-        IEnumerable<IEventFilter<TEventArgs>> GetAll<TEventArgs>() where TEventArgs : EventArgs;
+        IEnumerable<IEventFilter<TEventArgs>>? GetAll<TEventArgs>() where TEventArgs : EventArgs;
     }
 }

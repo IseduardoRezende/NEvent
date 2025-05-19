@@ -7,13 +7,9 @@ namespace NEvent.Core
     {
         private readonly IServiceProvider _serviceProvider = serviceProvider;
 
-        public IEnumerable<IEventFilter<TEventArgs>> GetAll<TEventArgs>() where TEventArgs : EventArgs
+        public IEnumerable<IEventFilter<TEventArgs>>? GetAll<TEventArgs>() where TEventArgs : EventArgs
         {
-            object? results = _serviceProvider.GetServices<IEventFilter<TEventArgs>>();
-
-            ArgumentNullException.ThrowIfNull(results, nameof(results));
-
-            return (results as IEnumerable<IEventFilter<TEventArgs>>)!;
+            return _serviceProvider.GetServices<IEventFilter<TEventArgs>>();
         }
     }
 }

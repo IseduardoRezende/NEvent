@@ -71,12 +71,12 @@ namespace NEvent.Core
             ArgumentNullException.ThrowIfNull(args, nameof(args));
 
             ISubscriber<TEventArgs> subscriber = _subscriberProvider.Get<TEventArgs>();
-            IEnumerable<IEventFilter<TEventArgs>> eventFilters = _eventFilterProvider.GetAll<TEventArgs>();
+            IEnumerable<IEventFilter<TEventArgs>>? eventFilters = _eventFilterProvider.GetAll<TEventArgs>();
 
-            if (!CanPublish(subscriber, out List<IEventHandler<TEventArgs>>? eventHandlers))
+            if (!CanPublish(subscriber, out List<IEventHandler<TEventArgs>> eventHandlers))
                 return;
 
-            if (!eventFilters.Any())
+            if (eventFilters is null || !eventFilters.Any())
             {
                 eventHandlers = ApplyEventOrder(eventHandlers);               
                 await ExecuteHandlersAsync(sender, args, eventHandlers, cancellationToken);            
@@ -151,8 +151,8 @@ namespace NEvent.Core
             return [.. eventItems.Select(e =>
             {
                 Type type = e.GetType();
-                EventOrderAttribute? attr = type.GetCustomAttribute<EventOrderAttribute>();
-                int order = attr?.Value ?? int.MaxValue;
+                EventOrderAttribute? attribute = type.GetCustomAttribute<EventOrderAttribute>();
+                int order = attribute?.Value ?? int.MaxValue;
                 return new { EventItem = e, Order = order };
             })
            .OrderBy(f => f.Order)
