@@ -19,9 +19,10 @@ Button btn = new(eventAggregator);
 
 await btn.SendMessageAsync("I Love you God.");
 
-await btn.SendMessageAsync("Hi (This message will be catched by filter.)");
+await btn.SendMessageAsync("Hi (This messages will be catched by filter.)");
+await btn.SendMessageAsync(" ");
 
 ButtonMessageHandler buttonMessageHandler = serviceProvider.GetService<ButtonMessageHandler>()!;
 eventAggregator.TryUnSubscribe(buttonMessageHandler);
 
-await btn.SendMessageAsync("If I see, It's wrong!");
+await btn.SendMessageAsync("ButtonMessageHandler UnSubscribed!");

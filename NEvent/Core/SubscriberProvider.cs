@@ -1,20 +1,10 @@
 ﻿using NEvent.Interfaces;
-using Microsoft.Extensions.Logging;
 
 namespace NEvent.Core
 {
-    public sealed class SubscriberProvider : ISubscriberProvider
+    public sealed class SubscriberProvider(IServiceProvider serviceProvider) : ISubscriberProvider
     {
-        private readonly IServiceProvider _serviceProvider;
-        private readonly ILogger<SubscriberProvider>? _logger;
-      
-        public SubscriberProvider(
-            IServiceProvider serviceProvider,
-            ILogger<SubscriberProvider>? logger = null)
-        {
-            _serviceProvider = serviceProvider;
-            _logger = logger;
-        }
+        private readonly IServiceProvider _serviceProvider = serviceProvider;
 
         public ISubscriber<TEventArgs> Get<TEventArgs>()
             where TEventArgs : EventArgs

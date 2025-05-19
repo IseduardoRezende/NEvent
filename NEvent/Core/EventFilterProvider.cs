@@ -1,21 +1,11 @@
 ﻿using NEvent.Interfaces;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace NEvent.Core
 {
-    public sealed class EventFilterProvider : IEventFilterProvider
+    public sealed class EventFilterProvider(IServiceProvider serviceProvider) : IEventFilterProvider
     {
-        private readonly IServiceProvider _serviceProvider;
-        private readonly ILogger<EventFilterProvider>? _logger;
-
-        public EventFilterProvider(
-            IServiceProvider serviceProvider,
-            ILogger<EventFilterProvider>? logger = null)
-        {
-            _serviceProvider = serviceProvider;
-            _logger = logger;
-        }
+        private readonly IServiceProvider _serviceProvider = serviceProvider;
 
         public IEnumerable<IEventFilter<TEventArgs>> GetAll<TEventArgs>() where TEventArgs : EventArgs
         {
